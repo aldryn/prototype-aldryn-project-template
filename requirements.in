@@ -1,0 +1,3 @@
+-e aldryn-addons/
+-e addons/aldryn-django/
+-e addons/aldryn-cms/
