@@ -11,12 +11,13 @@ class Form(forms.BaseForm):
         settings['INSTALLED_APPS'].append('aldryn_sites')
 
         # aldryn-boilerplates
+        settings['ALDRYN_BOILERPLATE_NAME'] = settings.get('ALDRYN_BOILERPLATE_NAME', 'legacy')
         settings['INSTALLED_APPS'].append('aldryn_boilerplates')
+        settings['TEMPLATE_CONTEXT_PROCESSORS'].append('aldryn_boilerplates.context_processors.boilerplate')
         settings['TEMPLATE_LOADERS'].insert(
             settings['TEMPLATE_LOADERS'].index('django.template.loaders.app_directories.Loader'),
             'aldryn_boilerplates.template_loaders.AppDirectoriesLoader'
         )
-        settings['ALDRYN_BOILERPLATE_NAME'] = settings.get('ALDRYN_BOILERPLATE_NAME', 'legacy')
         settings['STATICFILES_FINDERS'].insert(
             settings['STATICFILES_FINDERS'].index('django.contrib.staticfiles.finders.AppDirectoriesFinder'),
             'aldryn_boilerplates.staticfile_finders.AppDirectoriesFinder',
