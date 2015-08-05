@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
+import os
+
 
 def boolean_ish(value):
     if isinstance(value, basestring):
@@ -17,3 +19,11 @@ def json_from_file(path):
             return json.load(fobj)
     except ValueError as e:
         raise ValueError('{} ({})'.format(e, path))
+
+
+def mkdirs(path):
+    try:
+        os.makedirs(path)
+    except:
+        if not os.path.exists(path):
+            raise

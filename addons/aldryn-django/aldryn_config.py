@@ -23,7 +23,7 @@ class Form(forms.BaseForm):
         settings['DATA_ROOT'] = env('DATA_ROOT', os.path.join(settings['BASE_DIR'], 'data'))
         settings['SECRET_KEY'] = env('SECRET_KEY', 'this-is-not-very-random')
         settings['DEBUG'] = boolean_ish(env('DEBUG', False))
-        settings['TEMPLATE_DEBUG'] = boolean_ish(env('DEBUG', settings['DEBUG']))
+        settings['TEMPLATE_DEBUG'] = boolean_ish(env('TEMPLATE_DEBUG', settings['DEBUG']))
 
         settings['DATABASE_URL'] = env('DATABASE_URL')
         if settings['DATABASE_URL']:
@@ -45,12 +45,12 @@ class Form(forms.BaseForm):
             )
         settings['DATABASES']['default'] = dj_database_url.parse(settings['DATABASE_URL'])
 
-        settings['ALLOWED_HOSTS'] = env('ALLOWED_HOSTS', ['*'])
+        settings['ALLOWED_HOSTS'] = env('ALLOWED_HOSTS', ['localhost', '*'])
         settings['ROOT_URLCONF'] = 'urls'
         settings['ADDON_URLS'].append('aldryn_django.urls')
         settings['ADDON_URLS_I18N'].append('aldryn_django.i18n_urls')
 
-        WSGI_APPLICATION = 'wsgi.application'
+        settings['WSGI_APPLICATION'] = 'wsgi.application'
 
         if not settings['STATIC_URL']:
             settings['STATIC_URL'] = env('STATIC_URL', '/static/')

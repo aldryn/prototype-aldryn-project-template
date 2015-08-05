@@ -23,23 +23,24 @@ def count_str(number):
 
 
 def load(settings):
-
+    settings['BASE_DIR'] = settings.get(
+        'BASE_DIR',
+        os.path.dirname(os.path.abspath(settings['__file__']))
+    )
+    settings['ADDONS_DIR'] = settings.get(
+        'ADDONS_DIR',
+        os.path.join(settings['BASE_DIR'], 'addons')
+    )
+    utils.mkdirs(settings['ADDONS_DIR'])
     # TODO: .debug is not multi-process safe!
-    debug_path = os.path.join(settings.get('ADDONS_DIR'), '.debug')
+    debug_path = os.path.join(settings['ADDONS_DIR'], '.debug')
     shutil.rmtree(debug_path, ignore_errors=True)
-    os.makedirs(debug_path)
+    utils.mkdirs(debug_path)
 
     def dump(obj, count, name):
-        save_settings_dump(
-            obj,
-            os.path.join(
-                debug_path,
-                '{}-{}.dump'.format(
-                    count_str(count),
-                    name,
-                ),
-            ),
-        )
+        dump_name = '{}-{}.dump'.format(count_str(count), name)
+        dump_path = os.path.join(debug_path, dump_name)
+        save_settings_dump(obj, dump_path)
         return count + 1
 
     debug_count = 0
@@ -50,26 +51,26 @@ def load(settings):
         if not key in settings:
             settings[key] = value
     debug_count = dump(settings, debug_count, 'load-globals')
-    # add Addon default settings if they are not there yet
-    if 'ADDON_URLS' not in settings:
-        settings['ADDON_URLS'] = []
-    if 'ADDON_URLS_I18N' not in settings:
-        settings['ADDON_URLS_I18N'] = []
     # normalise settings
     for key, value in settings.items():
         if isinstance(value, tuple):
             settings[key] = list(value)
     debug_count = dump(settings, debug_count, 'normalise')
-    INSTALLED_ADDONS = settings.get('INSTALLED_ADDONS')
-    ADDONS_DIR = settings.get('ADDONS_DIR')
-    if not (INSTALLED_ADDONS and ADDONS_DIR):
+    # add Addon default settings if they are not there yet
+    if 'ADDON_URLS' not in settings:
+        settings['ADDON_URLS'] = []
+    if 'ADDON_URLS_I18N' not in settings:
+        settings['ADDON_URLS_I18N'] = []
+    settings['INSTALLED_APPS'].append('aldryn_addons')
+    # load Addon settings
+    if not (settings['INSTALLED_ADDONS'] and settings['ADDONS_DIR']):
         return
-    for addon_name in INSTALLED_ADDONS:
+    for addon_name in settings['INSTALLED_ADDONS']:
         if os.path.isabs(addon_name):
             addon_path = addon_name
             addon_name = os.path.basename(os.path.normpath(addon_path))
         else:
-            addon_path = os.path.join(ADDONS_DIR, addon_name)
+            addon_path = os.path.join(settings['ADDONS_DIR'], addon_name)
         load_addon_settings(name=addon_name, path=addon_path, settings=settings)
         debug_count = dump(settings, debug_count, addon_name)
 

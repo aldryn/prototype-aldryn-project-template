@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 from aldryn_client import forms
-import os
-from getenv import env
-from aldryn_addons.utils import boolean_ish
 
 
 class Form(forms.BaseForm):
@@ -19,6 +16,7 @@ class Form(forms.BaseForm):
             settings['TEMPLATE_LOADERS'].index('django.template.loaders.app_directories.Loader'),
             'aldryn_boilerplates.template_loaders.AppDirectoriesLoader'
         )
+        settings['ALDRYN_BOILERPLATE_NAME'] = settings.get('ALDRYN_BOILERPLATE_NAME', 'legacy')
         settings['STATICFILES_FINDERS'].insert(
             settings['STATICFILES_FINDERS'].index('django.contrib.staticfiles.finders.AppDirectoriesFinder'),
             'aldryn_boilerplates.staticfile_finders.AppDirectoriesFinder',

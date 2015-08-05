@@ -12,5 +12,6 @@ urlpatterns = patterns(
 ) + i18n_patterns(
     '',
     # add your own i18n patterns here
-    *aldryn_addons.urls.i18n_patterns()
+    url(r'^myapp/', include('myapp.urls')),
+    *aldryn_addons.urls.i18n_patterns()  # MUST be the last entry!
 )
