@@ -2,6 +2,7 @@
 import os
 import dj_database_url
 import django_cache_url
+import sys
 import warnings
 from aldryn_addons.utils import boolean_ish
 from aldryn_client import forms
@@ -81,4 +82,54 @@ class Form(forms.BaseForm):
             'south',
         ])
         settings['SITE_ID'] = env('SITE_ID', 1)
+
+
+        self.logging_settings(settings)
         return settings
+
+    def logging_settings(self, settings):
+        settings['LOGGING'] = {
+            'version': 1,
+            'disable_existing_loggers': False,
+            'filters': {
+                'require_debug_false': {
+                    '()': 'django.utils.log.RequireDebugFalse',
+                },
+                'require_debug_true': {
+                    '()': 'django.utils.log.RequireDebugTrue',
+                },
+            },
+            'handlers': {
+                'console': {
+                    'level': 'INFO',
+                    'class': 'logging.StreamHandler',
+                    'stream': sys.stdout,
+                },
+                'null': {
+                    'class': 'django.utils.log.NullHandler',
+                },
+            },
+            'loggers': {
+                '': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                },
+                'django': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                },
+                'django.request': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                    'propagate': False,
+                },
+                'aldryn': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                },
+                'py.warnings': {
+                    'handlers': ['console'],
+                },
+            }
+        }
+

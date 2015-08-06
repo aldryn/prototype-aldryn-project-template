@@ -23,5 +23,6 @@ setup(
         'dj-static',
         # database
         'psycopg2',
+        'structlog',
     ),
 )
