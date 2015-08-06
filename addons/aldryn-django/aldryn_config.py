@@ -85,6 +85,7 @@ class Form(forms.BaseForm):
 
 
         self.logging_settings(settings)
+        self.cache_settings(settings)
         return settings
 
     def logging_settings(self, settings):
@@ -133,3 +134,7 @@ class Form(forms.BaseForm):
             }
         }
 
+    def cache_settings(self, settings):
+        cache_url = env('CACHE_URL', settings.get('CACHE_URL'))
+        if cache_url:
+            settings['CACHES']['default'] = django_cache_url.parse(cache_url)
