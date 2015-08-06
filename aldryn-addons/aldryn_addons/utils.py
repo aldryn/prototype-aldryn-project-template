@@ -27,3 +27,11 @@ def mkdirs(path):
     except:
         if not os.path.exists(path):
             raise
+
+
+def openfile(path):
+    """
+    opens the file, creating it and directories if needed
+    """
+    mkdirs(os.path.dirname(path))
+    return open(path, 'w+')

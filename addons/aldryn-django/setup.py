@@ -24,5 +24,12 @@ setup(
         # database
         'psycopg2',
         'structlog',
+        'click',
     ),
+    entry_points='''
+        [console_scripts]
+        aldryn-django=aldryn_django.cli:main
+    ''',
+    include_package_data=True,
+    zip_safe=False,
 )
