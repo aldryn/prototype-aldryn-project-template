@@ -67,8 +67,6 @@ class Form(forms.BaseForm):
         if not settings['MEDIA_ROOT']:
             settings['MEDIA_ROOT'] = env('MEDIA_ROOT', os.path.join(settings['DATA_ROOT'], 'media'))
 
-        settings['LANGUAGE_CODE'] = 'en'
-
         settings['INSTALLED_APPS'].extend([
             'django.contrib.auth',
             'django.contrib.contenttypes',
@@ -86,6 +84,7 @@ class Form(forms.BaseForm):
         self.server_settings(settings)
         self.logging_settings(settings)
         self.cache_settings(settings)
+        self.i18n_settings(settings)
         return settings
 
     def domain_settings(self, settings):
@@ -156,3 +155,14 @@ class Form(forms.BaseForm):
         cache_url = env('CACHE_URL', settings.get('CACHE_URL'))
         if cache_url:
             settings['CACHES']['default'] = django_cache_url.parse(cache_url)
+
+    def i18n_settings(self, settings):
+        settings['ALL_LANGUAGES'] = list(settings['LANGUAGES'])
+        settings['LANGUAGE_CODE'] = 'en'
+        settings['USE_L10N'] = True
+        settings['USE_I18N'] = True
+        settings['LANGUAGES'] = []
+
+    def time_settings(self, settings):
+        if env('TIME_ZONE'):
+            settings['TIME_ZONE'] = env('TIME_ZONE')
