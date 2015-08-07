@@ -5,6 +5,7 @@ import shutil
 import uuid
 from aldryn_addons import utils
 from pprint import pformat
+from django.core.exceptions import ImproperlyConfigured
 
 
 def save_settings_dump(settings, path):
@@ -30,6 +31,10 @@ def load(settings):
     settings['ADDONS_DIR'] = settings.get(
         'ADDONS_DIR',
         os.path.join(settings['BASE_DIR'], 'addons')
+    )
+    settings['ADDONS_DEV_DIR'] = settings.get(
+        'ADDONS_DEV_DIR',
+        os.path.join(settings['BASE_DIR'], 'addons-dev')
     )
     utils.mkdirs(settings['ADDONS_DIR'])
     # TODO: .debug is not multi-process safe!
@@ -70,7 +75,18 @@ def load(settings):
             addon_path = addon_name
             addon_name = os.path.basename(os.path.normpath(addon_path))
         else:
-            addon_path = os.path.join(settings['ADDONS_DIR'], addon_name)
+            addon_dev_path = os.path.join(settings['ADDONS_DEV_DIR'], addon_name)
+            addon_normal_path = os.path.join(settings['ADDONS_DIR'], addon_name)
+            if os.path.exists(addon_dev_path):
+                addon_path = addon_dev_path
+            elif os.path.exists(addon_normal_path):
+                addon_path = addon_normal_path
+            else:
+                raise ImproperlyConfigured(
+                    '{} Addon not found (tried {} and {})'.format(
+                        addon_name, addon_dev_path, addon_normal_path,
+                    )
+                )
         load_addon_settings(name=addon_name, path=addon_path, settings=settings)
         debug_count = dump(settings, debug_count, addon_name)
 
