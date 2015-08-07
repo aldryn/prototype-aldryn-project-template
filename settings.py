@@ -17,14 +17,15 @@ import aldryn_addons.settings
 aldryn_addons.settings.load(locals())
 
 
-INSTALLED_APPS.extend([
-    # add you project specific apps here
-])
-
-TEMPLATE_CONTEXT_PROCESSORS.extend([
-    # add you project specific template context processors here
-])
-
-MIDDLEWARE_CLASSES.extend([
-    # add you project specific middlewares here
-])
+# INSTALLED_APPS.extend([
+#     # add you project specific apps here
+#     'myapp',
+# ])
+#
+# TEMPLATE_CONTEXT_PROCESSORS.extend([
+#     # add you project specific template context processors here
+# ])
+#
+# MIDDLEWARE_CLASSES.extend([
+#     # add you project specific middlewares here
+# ])

@@ -1,1 +1,1 @@
-FROM minimal_baseprojectonbuild
+FROM prototypebaseprojectmeta_baseprojectonbuild

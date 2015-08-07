@@ -110,7 +110,7 @@ is done in the UI.
 ## private
 
 contains all the project specific static resources that are private. Mostly
-used for the sass sources.
+used for the sass sources.l
 
 ## static
 
