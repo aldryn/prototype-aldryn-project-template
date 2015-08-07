@@ -1,2 +1,2 @@
-web: /app/launch/web
-migrate: /app/migrate.sh
+web: aldryn-django web
+migrate: aldryn-django migrate
