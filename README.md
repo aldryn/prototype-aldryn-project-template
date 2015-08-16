@@ -2,7 +2,7 @@
 
 Welcome to the first prototype of the new aldryn project template.
 
-**Use https://github.com/aldryn/prototype-aldryn-project-template to setup locally.**
+**Use https://github.com/aldryn/prototype-base-project-meta to setup locally.**
 
 Your feedback is very valuable! Please help.
 
