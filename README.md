@@ -57,7 +57,7 @@ wsgi.py
 ```
 
 For this prototype the ``addons-dev`` folder actually contains some sourcecode
-within the git repo. In real usage that code would be in git repos of its own
+within the git repo. In real usage the code for each Addon would be in a git repo of its own
 and manually cloned into the ``addons-dev`` folder.
 
 ## ``addons`` and ``addons-dev``
