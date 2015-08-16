@@ -56,10 +56,6 @@ urls.py
 wsgi.py
 ```
 
-For this prototype the ``addons-dev`` folder actually contains some sourcecode
-within the git repo. In real usage the code for each Addon would be in a git repo of its own
-and manually cloned into the ``addons-dev`` folder.
-
 ## ``addons`` and ``addons-dev``
 
 There is a folder here for every Addon that is installed in the project and 
@@ -77,6 +73,10 @@ into ``addons-dev`` and ``pip install -e`` it.
 ``aldryn_addon.py`` and ``addon.json`` are already at the right location.
 Remember to ``.gitignore`` ``settings.json`` in the Addon repo.
 
+For this prototype the ``addons-dev`` folder actually contains the sourcecode
+within the git repo. In real usage the code for each Addon would be in a git repo of its own
+and manually cloned into the ``addons-dev`` folder.
+
 Even *Django* itself is an Addon. It constructs all the common settings like
 ``DATABASES``, ``CACHES`` and many more. It also provides the manage.py script
 and a standardised command to start the webserver, encapsulating all the 
@@ -84,7 +84,7 @@ nitty-gritty details. What is also planned, is that Addons will be able to
 register scripts for the ``migrate`` step (mainly used for database
 migrations and fix-mptt by django-cms).
 So upgrading the common ``aldryn-django`` package can also
-upgrades the way django is started and how migrations are run (Django 1.6 to
+upgrade the way django is started and how migrations are run (Django 1.6 to
 Django 1.7 migrations upgrade anyone? ;-) ).
  
 Similarly *django CMS* is an Addon. It adds all the django-cms settings. In 
@@ -106,13 +106,13 @@ aldryn_addons.settings.load(locals())
 ```
 
 But you can do whatever you want in here. Including shooting yourself in the
-foot. The controlpanel will auto update ``INSTALLED_ADDONS`` based on what
+foot. The controlpanel will auto update the ``INSTALLED_ADDONS`` setting based on what
 is done in the UI.
 
 ## private
 
 contains all the project specific static resources that are private. Mostly
-used for the sass sources.l
+used for the sass sources.
 
 ## static
 
@@ -128,4 +128,4 @@ All the heavy lifting is done in the parent docker image. But you can do
 do anything you want here... install apt-packages or other binary
 dependencies.
 Or if you want to go all-in and fully customised: use an entirely different
-base image.
+base image. Heck, install ruby on rails if you feel like it ;-)
