@@ -1,36 +1,36 @@
 #-*- coding: utf-8 -*-
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import
 import click
 import os
 import sys
 import yaml
-from getenv import env
 from django.template import loader, Context
 from django.conf import settings as django_settings
-from aldryn_addons.utils import openfile
+from aldryn_addons.utils import openfile, boolean_ish, senv
+
 
 # add the current directory to pythonpath. So the project files can be read.
 BASE_DIR = os.getcwd()
 sys.path.insert(0, BASE_DIR)
 
-settings = {}
-
 
 @click.command()
-def web():
+@click.pass_obj
+def web(ctx_obj):
     """
     launch the webserver of choice (uwsgi)
     """
-    if any(settings[key] for key in ['ENABLE_NGINX', 'ENABLE_PAGESPEED', 'ENABLE_BROWSERCACHE']):
+    if any(boolean_ish(ctx_obj['settings'][key]) for key in ['ENABLE_NGINX', 'ENABLE_PAGESPEED', 'ENABLE_BROWSERCACHE']):
         # uwsgi behind nginx. possibly with pagespeed/browsercache
-        start_with_nginx(settings)
+        start_with_nginx(ctx_obj['settings'])
     else:
         # pure uwsgi
-        execute(start_uwsgi_command())
+        execute(start_uwsgi_command(settings=ctx_obj['settings'], port=80))
 
 
 @click.command()
-def worker():
+@click.pass_obj
+def worker(ctx_obj):
     """
     coming soon: launch the background worker
     """
@@ -39,7 +39,8 @@ def worker():
 
 
 @click.command()
-def migrate():
+@click.pass_obj
+def migrate(ctx_obj):
     """
     run any migrations needed at deploy time. most notably database migrations.
     """
@@ -47,16 +48,16 @@ def migrate():
     pass
 
 
-
 @click.group()
-def main():
+@click.pass_context
+def main(ctx):
     if not os.path.exists(os.path.join(BASE_DIR, 'manage.py')):
         raise click.UsageError('make sure you are in the same directory as manage.py')
     from . import startup
     startup._setup(BASE_DIR)
-    # TODO: there must be a better way
-    global settings
-    settings = {key: getattr(django_settings, key) for key in dir(django_settings)}
+    ctx.obj = {
+        'settings': {key: getattr(django_settings, key) for key in dir(django_settings)}
+    }
 
 
 main.add_command(web)
@@ -70,7 +71,7 @@ def execute(args, script=None):
     os.execvp(command, args)
 
 
-def start_uwsgi_command(port=None):
+def start_uwsgi_command(settings, port=None):
     return [
         'uwsgi',
         '--module=wsgi',
@@ -81,7 +82,7 @@ def start_uwsgi_command(port=None):
     ]
 
 
-def start_procfile_command(procfile_path):
+def start_procfile_command(settings, procfile_path):
     return [
         'forego',
         'start',

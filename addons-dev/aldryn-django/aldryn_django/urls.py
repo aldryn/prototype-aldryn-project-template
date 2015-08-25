@@ -12,4 +12,9 @@ urlpatterns = patterns(
         'django.contrib.staticfiles.views.serve',
         {'insecure': True}
     ),
+    url(
+        r'^favicon.ico$',
+        'django.contrib.staticfiles.views.serve',
+        {'insecure': True, 'path': 'favicon.ico'}
+    ),
 )

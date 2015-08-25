@@ -5,6 +5,7 @@ setup(
     name="aldryn-cms",
     version="3.1.2",
     install_requires=(
+        'aldryn-addons',
         'django-cms==3.1.2',
         # common
         # TODO: mostly to be split out into other packages

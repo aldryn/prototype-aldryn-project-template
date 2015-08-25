@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
-import os
-import dj_database_url
-import django_cache_url
 import sys
-import warnings
-from aldryn_addons.utils import boolean_ish
 from aldryn_client import forms
-from getenv import env
-import yurl
 
 
 class Form(forms.BaseForm):
     name = forms.CheckboxField('Name', required=False)
 
     def to_settings(self, data, settings):
-        settings['BASE_DIR'] = settings.get(
-            'BASE_DIR',
-            os.path.dirname(os.path.abspath(settings['__file__']))
-        )
+        import os
+        import dj_database_url
+        import warnings
+        import yurl
+        from functools import partial
+        from aldryn_addons.utils import boolean_ish, djsenv
+        env = partial(djsenv, settings=settings)
+
+        # BASE_DIR should already be set by aldryn-addons
+        settings['BASE_DIR'] = env('BASE_DIR', required=True)
         settings['DATA_ROOT'] = env('DATA_ROOT', os.path.join(settings['BASE_DIR'], 'data'))
         settings['SECRET_KEY'] = env('SECRET_KEY', 'this-is-not-very-random')
         settings['DEBUG'] = boolean_ish(env('DEBUG', False))
@@ -27,10 +26,7 @@ class Form(forms.BaseForm):
         if settings['DATABASE_URL']:
             pass
         elif env('DJANGO_MODE') == 'build':
-            settings['DATABASES']['default'] = {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': ':memory:',
-            }
+            settings['DATABASE_URL'] = 'sqlite://:memory:'
         else:
             settings['DATABASE_URL'] = 'sqlite:///{}'.format(
                 os.path.join(settings['DATA_ROOT'], 'db.sqlite3')
@@ -43,29 +39,26 @@ class Form(forms.BaseForm):
             )
         settings['DATABASES']['default'] = dj_database_url.parse(settings['DATABASE_URL'])
 
-        settings['ROOT_URLCONF'] = 'urls'
+        settings['ROOT_URLCONF'] = env('ROOT_URLCONF', 'urls')
         settings['ADDON_URLS'].append('aldryn_django.urls')
         settings['ADDON_URLS_I18N'].append('aldryn_django.i18n_urls')
 
         settings['WSGI_APPLICATION'] = 'wsgi.application'
 
-        if not settings['STATIC_URL']:
-            settings['STATIC_URL'] = env('STATIC_URL', '/static/')
+        settings['STATIC_URL'] = env('STATIC_URL', '/static/')
         settings['STATIC_URL_IS_ON_OTHER_DOMAIN'] = bool(yurl.URL(settings['STATIC_URL']).host)
-        if not settings['STATIC_ROOT']:
-            settings['STATIC_ROOT'] = env(
-                'STATIC_ROOT',
-                os.path.join(settings['BASE_DIR'], 'static_collected'),
-            )
-        settings['STATICFILES_DIRS'] = [
-            os.path.join(settings['BASE_DIR'], 'static'),
-        ]
+        settings['STATIC_ROOT'] = env(
+            'STATIC_ROOT',
+            os.path.join(settings['BASE_DIR'], 'static_collected'),
+        )
+        settings['STATICFILES_DIRS'] = env(
+            'STATICFILES_DIRS',
+            [os.path.join(settings['BASE_DIR'], 'static'),]
+        )
 
-        if not settings['MEDIA_URL']:
-            settings['MEDIA_URL'] = '/media/'
+        settings['MEDIA_URL'] = env('MEDIA_URL', '/media/')
         settings['MEDIA_URL_IS_ON_OTHER_DOMAIN'] = bool(yurl.URL(settings['MEDIA_URL']).host)
-        if not settings['MEDIA_ROOT']:
-            settings['MEDIA_ROOT'] = env('MEDIA_ROOT', os.path.join(settings['DATA_ROOT'], 'media'))
+        settings['MEDIA_ROOT'] = env('MEDIA_ROOT', os.path.join(settings['DATA_ROOT'], 'media'))
 
         settings['INSTALLED_APPS'].extend([
             'django.contrib.auth',
@@ -80,19 +73,19 @@ class Form(forms.BaseForm):
         ])
         settings['SITE_ID'] = env('SITE_ID', 1)
 
-        self.domain_settings(settings)
-        self.server_settings(settings)
-        self.logging_settings(settings)
-        self.cache_settings(settings)
-        self.i18n_settings(settings)
+        self.domain_settings(settings, env=env)
+        self.server_settings(settings, env=env)
+        self.logging_settings(settings, env=env)
+        self.cache_settings(settings, env=env)
+        self.i18n_settings(settings, env=env)
         return settings
 
-    def domain_settings(self, settings):
+    def domain_settings(self, settings, env):
         settings['ALLOWED_HOSTS'] = env('ALLOWED_HOSTS', ['localhost', '*'])
         settings['DOMAIN'] = env('DOMAIN')
         # TODO: aldryn-sites config
 
-    def server_settings(self, settings):
+    def server_settings(self, settings, env):
         settings['PORT'] = env('PORT', 80)
         settings['BACKEND_PORT'] = env('BACKEND_PORT', 8000)
         settings['ENABLE_NGINX'] = env('ENABLE_NGINX', False)
@@ -105,7 +98,7 @@ class Form(forms.BaseForm):
         settings['DJANGO_WEB_MAX_REQUESTS'] = env('DJANGO_WEB_MAX_REQUESTS', 500)
         settings['DJANGO_WEB_TIMEOUT'] = env('DJANGO_WEB_TIMEOUT', 120)
 
-    def logging_settings(self, settings):
+    def logging_settings(self, settings, env):
         settings['LOGGING'] = {
             'version': 1,
             'disable_existing_loggers': False,
@@ -151,18 +144,19 @@ class Form(forms.BaseForm):
             }
         }
 
-    def cache_settings(self, settings):
+    def cache_settings(self, settings, env):
+        import django_cache_url
         cache_url = env('CACHE_URL', settings.get('CACHE_URL'))
         if cache_url:
             settings['CACHES']['default'] = django_cache_url.parse(cache_url)
 
-    def i18n_settings(self, settings):
+    def i18n_settings(self, settings, env):
         settings['ALL_LANGUAGES'] = list(settings['LANGUAGES'])
         settings['LANGUAGE_CODE'] = 'en'
         settings['USE_L10N'] = True
         settings['USE_I18N'] = True
         settings['LANGUAGES'] = []
 
-    def time_settings(self, settings):
+    def time_settings(self, settings, env):
         if env('TIME_ZONE'):
             settings['TIME_ZONE'] = env('TIME_ZONE')

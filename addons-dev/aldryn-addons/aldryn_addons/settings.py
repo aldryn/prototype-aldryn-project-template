@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+from UserDict import IterableUserDict
+from functools import partial
 import imp
 import os
 import shutil
 import uuid
-from aldryn_addons import utils
+from . import utils
+from .utils import global_settings
 from pprint import pformat
 from django.core.exceptions import ImproperlyConfigured
 
@@ -23,19 +26,48 @@ def count_str(number):
     return '{0:05d}'.format(number)
 
 
+class SettingsDictWrapper(IterableUserDict):
+    """
+    hack to get around detecting if an altered setting was actually explicitly
+    set or just happens to be the same as the django default.
+    """
+    def __init__(self, wrapped, watched_keys):
+        self.data = wrapped
+        self._watched_keys = watched_keys
+        self.altered_keys = set()
+        # register any already set settings as altered keys, if necessary
+        for key, value in self.data.items():
+            if key in self._watched_keys:
+                self[key] = value
+
+    def __setitem__(self, key, value):
+        if key in self._watched_keys:
+            self.altered_keys.add(key)
+        return self.set(key, value)
+
+    def set(self, key, value):
+        return IterableUserDict.__setitem__(self, key, value)
+
+
 def load(settings):
-    settings['BASE_DIR'] = settings.get(
+    settings = SettingsDictWrapper(
+        settings,
+        watched_keys=global_settings.keys(),
+    )
+    env = partial(utils.djsenv, settings=settings)
+    settings['BASE_DIR'] = env(
         'BASE_DIR',
         os.path.dirname(os.path.abspath(settings['__file__']))
     )
-    settings['ADDONS_DIR'] = settings.get(
+    settings['ADDONS_DIR'] = env(
         'ADDONS_DIR',
         os.path.join(settings['BASE_DIR'], 'addons')
     )
-    settings['ADDONS_DEV_DIR'] = settings.get(
+    settings['ADDONS_DEV_DIR'] = env(
         'ADDONS_DEV_DIR',
         os.path.join(settings['BASE_DIR'], 'addons-dev')
     )
+    utils.mkdirs(settings['ADDONS_DEV_DIR'])
     utils.mkdirs(settings['ADDONS_DIR'])
     # TODO: .debug is not multi-process safe!
     debug_path = os.path.join(settings['ADDONS_DIR'], '.debug')
@@ -51,21 +83,22 @@ def load(settings):
     debug_count = 0
     debug_count = dump(settings, debug_count, 'initial')
     # load global defaults
-    from django.conf import global_settings
-    for key, value in global_settings.__dict__.items():
-        if not key in settings:
-            settings[key] = value
+    for key, value in global_settings.items():
+        if key not in settings:
+            # SettingsDictWrapper.set skips the default settings change
+            # recording
+            settings.set(key, value)
+
     debug_count = dump(settings, debug_count, 'load-globals')
-    # normalise settings
+    # normalise tuple settings to lists
     for key, value in settings.items():
         if isinstance(value, tuple):
-            settings[key] = list(value)
+            settings.set(key, list(value))
     debug_count = dump(settings, debug_count, 'normalise')
     # add Addon default settings if they are not there yet
-    if 'ADDON_URLS' not in settings:
-        settings['ADDON_URLS'] = []
-    if 'ADDON_URLS_I18N' not in settings:
-        settings['ADDON_URLS_I18N'] = []
+    settings.setdefault('ADDON_URLS', [])
+    settings.setdefault('ADDON_URLS_I18N', [])
+    settings.setdefault('INSTALLED_APPS', [])
     settings['INSTALLED_APPS'].append('aldryn_addons')
     # load Addon settings
     if not (settings['INSTALLED_ADDONS'] and settings['ADDONS_DIR']):
@@ -96,7 +129,7 @@ def load_addon_settings(name, path, settings):
     addon_json = utils.json_from_file(addon_json_path)
     addon_settings_path = os.path.join(path, 'settings.json')
     addon_settings = utils.json_from_file(addon_settings_path)
-    # TODO: once we have "secrets" support on certain field:
+    # TODO: once we have optional "secrets" support on fields:
     #       load the secret settings from environment variables here and add
     #       them to addon_settings
     aldryn_config_py_path = os.path.join(path, 'aldryn_config.py')
@@ -119,5 +152,5 @@ def load_addon_settings(name, path, settings):
         if app not in settings['INSTALLED_APPS']:
             settings['INSTALLED_APPS'].append(app)
     # remove duplicates
-    settings['INSTALLED_APPS'] = list(set(settings['INSTALLED_APPS']))
-    # settings['MIDDLEWARE_CLASSES'] = list(set(settings['MIDDLEWARE_CLASSES']))
+    settings['INSTALLED_APPS'] = utils.remove_duplicates(settings['INSTALLED_APPS'])
+    settings['MIDDLEWARE_CLASSES'] = utils.remove_duplicates(settings['MIDDLEWARE_CLASSES'])

@@ -5,6 +5,7 @@ setup(
     name="aldryn-django",
     version="1.6.11",
     install_requires=(
+        'aldryn-addons',
         'Django==1.6.11',
         # setup utils
         'dj-database-url',
