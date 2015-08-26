@@ -44,8 +44,13 @@ def migrate(ctx_obj):
     """
     run any migrations needed at deploy time. most notably database migrations.
     """
-    # TODO: create/integrate aldryn-addons migrate api
-    pass
+    cmds = ctx_obj['settings']['MIGRATION_COMMANDS']
+    click.echo('aldryn-django: running migration commands')
+    for cmd in cmds:
+        click.echo('    ----> {}'.format(cmd))
+        exitcode = os.system(cmd)
+        if exitcode != 0:
+            sys.exit(exitcode)
 
 
 @click.group()

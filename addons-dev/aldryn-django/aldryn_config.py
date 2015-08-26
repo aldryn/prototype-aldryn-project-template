@@ -78,6 +78,7 @@ class Form(forms.BaseForm):
         self.logging_settings(settings, env=env)
         self.cache_settings(settings, env=env)
         self.i18n_settings(settings, env=env)
+        self.migration_settings(settings, env=env)
         return settings
 
     def domain_settings(self, settings, env):
@@ -160,3 +161,11 @@ class Form(forms.BaseForm):
     def time_settings(self, settings, env):
         if env('TIME_ZONE'):
             settings['TIME_ZONE'] = env('TIME_ZONE')
+
+    def migration_settings(self, settings, env):
+        settings.setdefault('MIGRATION_COMMANDS', [])
+        mcmds = settings['MIGRATION_COMMANDS']
+
+        mcmds.append('python manage.py createcachetable django_dbcache; exit 0')
+        mcmds.append('python manage.py syncdb --noinput')
+        mcmds.append('python manage.py migrate --list --noinput && python manage.py migrate --noinput && python manage.py migrate --list --noinput')

@@ -54,4 +54,9 @@ class Form(forms.BaseForm):
         # else:
         #     CKEDITOR_SETTINGS['stylesSet'] = 'default:/static/js/modules/ckeditor.wysiwyg.js'
         #     CKEDITOR_SETTINGS['contentsCss'] = ['/static/css/base.css']
+
+        settings['MIGRATION_COMMANDS'].append(
+            'python manage.py cms fix-mptt --noinput'
+        )
         return settings
+
