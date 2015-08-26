@@ -26,5 +26,6 @@ setup(
         'aldryn-sites',
         'django-filer',
         'cmsplugin-filer',
+        'django-hvad',
     ),
 )
