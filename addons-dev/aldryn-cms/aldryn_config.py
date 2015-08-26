@@ -1,14 +1,45 @@
 # -*- coding: utf-8 -*-
 from aldryn_client import forms
+import json
 
 
 class Form(forms.BaseForm):
-    name = forms.CheckboxField('Name', required=False)
+    cms_templates = forms.CharField('CMS Templates', required=True, initial='[["default.html", "Default"]]')
 
     def to_settings(self, data, settings):
         # TODO: break out a lot of this stuff into other Addons
         # aldryn-sites
-        settings['INSTALLED_APPS'].append('aldryn_sites')
+        settings['INSTALLED_APPS'].extend([
+            'aldryn_sites',
+            # django-cms
+            'cms',
+            'treebeard',
+            'menus',
+            'sekizai',
+            'djangocms_admin_style',
+            'reversion',
+
+            # django-filer
+            'mptt',
+        ])
+        settings['TEMPLATE_CONTEXT_PROCESSORS'].extend([
+            'sekizai.context_processors.sekizai',
+            'cms.context_processors.cms_settings',
+        ])
+        settings['MIDDLEWARE_CLASSES'].extend([
+            'cms.middleware.user.CurrentUserMiddleware',
+            'cms.middleware.page.CurrentPageMiddleware',
+            'cms.middleware.toolbar.ToolbarMiddleware',
+            'cms.middleware.language.LanguageCookieMiddleware',
+        ])
+
+        settings['ADDON_URLS_I18N_LAST'] = 'cms.urls'
+
+        settings['CMS_TEMPLATES'] = settings.get(
+            'CMS_TEMPLATES',
+            # TODO: optionally load from the json file for fast syncing?
+            json.loads(data['cms_templates'])
+        )
 
         # aldryn-boilerplates
         settings['ALDRYN_BOILERPLATE_NAME'] = settings.get('ALDRYN_BOILERPLATE_NAME', 'legacy')
@@ -56,7 +87,7 @@ class Form(forms.BaseForm):
         #     CKEDITOR_SETTINGS['contentsCss'] = ['/static/css/base.css']
 
         settings['MIGRATION_COMMANDS'].append(
-            'python manage.py cms fix-mptt --noinput'
+            'python manage.py cms fix-tree --noinput'
         )
         return settings
 

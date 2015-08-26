@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+import json
 import sys
 from aldryn_client import forms
 
 
 class Form(forms.BaseForm):
-    name = forms.CheckboxField('Name', required=False)
+    languages = forms.CharField('Languages', required=True, initial='["en", "de"]')
 
     def to_settings(self, data, settings):
         import os
@@ -71,13 +72,24 @@ class Form(forms.BaseForm):
             'south',
             'aldryn_django',
         ])
+        settings['TEMPLATE_CONTEXT_PROCESSORS'].extend([
+            'django.core.context_processors.request',
+        ])
+        settings['MIDDLEWARE_CLASSES'].extend([
+            'django.middleware.locale.LocaleMiddleware',
+        ])
+
+        settings['TEMPLATE_DIRS'] = env(
+            'TEMPLATE_DIRS',
+            [os.path.join(settings['BASE_DIR'], 'templates')],
+        )
         settings['SITE_ID'] = env('SITE_ID', 1)
 
         self.domain_settings(settings, env=env)
         self.server_settings(settings, env=env)
         self.logging_settings(settings, env=env)
         self.cache_settings(settings, env=env)
-        self.i18n_settings(settings, env=env)
+        self.i18n_settings(data, settings, env=env)
         self.migration_settings(settings, env=env)
         return settings
 
@@ -147,16 +159,21 @@ class Form(forms.BaseForm):
 
     def cache_settings(self, settings, env):
         import django_cache_url
-        cache_url = env('CACHE_URL', settings.get('CACHE_URL'))
+        cache_url = env('CACHE_URL')
         if cache_url:
             settings['CACHES']['default'] = django_cache_url.parse(cache_url)
 
-    def i18n_settings(self, settings, env):
+    def i18n_settings(self, data, settings, env):
         settings['ALL_LANGUAGES'] = list(settings['LANGUAGES'])
-        settings['LANGUAGE_CODE'] = 'en'
+        settings['ALL_LANGUAGES_DICT'] = dict(settings['ALL_LANGUAGES'])
+        languages = json.loads(data['languages'])
+        settings['LANGUAGE_CODE'] = languages[0]
         settings['USE_L10N'] = True
         settings['USE_I18N'] = True
-        settings['LANGUAGES'] = []
+        settings['LANGUAGES'] = [
+            (code, settings['ALL_LANGUAGES_DICT'][code])
+            for code in languages
+        ]
 
     def time_settings(self, settings, env):
         if env('TIME_ZONE'):

@@ -26,6 +26,12 @@ setup(
         'psycopg2',
         'structlog',
         'click',
+        'subprocess32',
+        'South',
+
+        # not strictly needed by Django, but django-cms needs it.
+        # it it must be <1.9 for Django 1.6.x support
+        'django-reversion<1.9',
     ),
     entry_points='''
         [console_scripts]

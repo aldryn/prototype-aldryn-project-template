@@ -7,6 +7,7 @@ setup(
     install_requires=(
         'aldryn-addons',
         'django-cms==3.1.2',
+        'django-reversion',
         # common
         # TODO: mostly to be split out into other packages
         'django-compressor',
@@ -19,10 +20,11 @@ setup(
         'django-treebeard',
         'django-simple-captcha',
         'BeautifulSoup',
-        'subprocess32',
         'django-parler',
         'django-robots',
         'aldryn-boilerplates',
         'aldryn-sites',
+        'django-filer',
+        'cmsplugin-filer',
     ),
 )
