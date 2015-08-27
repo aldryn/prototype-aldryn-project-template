@@ -119,40 +119,59 @@ class Form(forms.BaseForm):
         settings['THUMBNAIL_CACHE_DIMENSIONS'] = True
 
 
-        # TODO: move this to ckeditor addon aldyn config when we extract it from the base project
-        # boilerplate should provide /static/js/modules/ckeditor.wysiwyg.js and /static/css/base.css
-        # CKEDITOR_SETTINGS = {
-        #     'height': 300,
-        #     'language': '{{ language }}',
-        #     'toolbar': 'CMS',
-        #     'skin': 'moono',
-        #     'extraPlugins': 'cmsplugins',
-        #     'toolbar_HTMLField': [
-        #         ['Undo', 'Redo'],
-        #         ['cmsplugins', '-', 'ShowBlocks'],
-        #         ['Format', 'Styles'],
-        #         ['TextColor', 'BGColor', '-', 'PasteText', 'PasteFromWord'],
-        #         ['Maximize', ''],
-        #         '/',
-        #         ['Bold', 'Italic', 'Underline', '-', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
-        #         ['JustifyLeft', 'JustifyCenter', 'JustifyRight'],
-        #         ['HorizontalRule'],
-        #         ['Link', 'Unlink'],
-        #         ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Table'],
-        #         ['Source'],
-        #         ['Link', 'Unlink', 'Anchor'],
-        #     ],
-        # }
-        # boilerplate_name = locals().get('ALDRYN_BOILERPLATE_NAME', 'legacy')
-        # if boilerplate_name == 'bootstrap3':
-        #     CKEDITOR_SETTINGS['stylesSet'] = 'default:/static/js/addons/ckeditor.wysiwyg.js'
-        #     CKEDITOR_SETTINGS['contentsCss'] = ['/static/css/base.css']
-        # else:
-        #     CKEDITOR_SETTINGS['stylesSet'] = 'default:/static/js/modules/ckeditor.wysiwyg.js'
-        #     CKEDITOR_SETTINGS['contentsCss'] = ['/static/css/base.css']
-
         settings['MIGRATION_COMMANDS'].append(
             'python manage.py cms fix-tree --noinput'
         )
+
+        # default plugins
+        settings['INSTALLED_APPS'].extend([
+            'djangocms_text_ckeditor',
+            'djangocms_link',
+            'djangocms_snippet',
+            'djangocms_googlemap',
+            # cmsplugin-filer
+            'cmsplugin_filer_file',
+            'cmsplugin_filer_image',
+
+            # required by aldryn-forms
+            'captcha',
+        ])
+
+        # boilerplate must provide /static/js/modules/ckeditor.wysiwyg.js and /static/css/base.css
+        CKEDITOR_SETTINGS = {
+            'height': 300,
+            'language': '{{ language }}',
+            'toolbar': 'CMS',
+            'skin': 'moono',
+            'extraPlugins': 'cmsplugins',
+            'toolbar_HTMLField': [
+                ['Undo', 'Redo'],
+                ['cmsplugins', '-', 'ShowBlocks'],
+                ['Format', 'Styles'],
+                ['TextColor', 'BGColor', '-', 'PasteText', 'PasteFromWord'],
+                ['Maximize', ''],
+                '/',
+                ['Bold', 'Italic', 'Underline', '-', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
+                ['JustifyLeft', 'JustifyCenter', 'JustifyRight'],
+                ['HorizontalRule'],
+                ['Link', 'Unlink'],
+                ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Table'],
+                ['Source'],
+                ['Link', 'Unlink', 'Anchor'],
+            ],
+        }
+        boilerplate_name = locals().get('ALDRYN_BOILERPLATE_NAME', 'legacy')
+        if boilerplate_name == 'bootstrap3':
+            CKEDITOR_SETTINGS['stylesSet'] = 'default:/static/js/addons/ckeditor.wysiwyg.js'
+            CKEDITOR_SETTINGS['contentsCss'] = ['/static/css/base.css']
+        else:
+            CKEDITOR_SETTINGS['stylesSet'] = 'default:/static/js/modules/ckeditor.wysiwyg.js'
+            CKEDITOR_SETTINGS['contentsCss'] = ['/static/css/base.css']
+
+        # select2 (required by djangocms_link plugin)
+        settings['INSTALLED_APPS'].extend([
+            'django_select2',
+        ])
+        settings['ADDON_URLS_I18N'].append('aldryn_cms.urls_i18n')
         return settings
 

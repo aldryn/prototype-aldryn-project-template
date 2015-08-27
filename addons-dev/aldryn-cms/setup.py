@@ -25,8 +25,15 @@ setup(
         'aldryn-boilerplates',
         'aldryn-sites',
         'django-filer',
-        'cmsplugin-filer',
         'django-hvad',
         'aldryn-snake',
+
+        # default plugins
+        # TODO: split into other packages
+        'djangocms-googlemap',
+        'djangocms-link',
+        'djangocms-snippet',
+        'djangocms-text-ckeditor',
+        'cmsplugin-filer',
     ),
 )
