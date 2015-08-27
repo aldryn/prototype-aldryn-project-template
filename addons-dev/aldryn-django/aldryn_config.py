@@ -74,9 +74,11 @@ class Form(forms.BaseForm):
         ])
         settings['TEMPLATE_CONTEXT_PROCESSORS'].extend([
             'django.core.context_processors.request',
+            'aldryn_django.context_processors.debug',
         ])
         settings['MIDDLEWARE_CLASSES'].extend([
             'django.middleware.locale.LocaleMiddleware',
+            'aldryn_django.middleware.CurrentSiteMiddleware',
         ])
 
         settings['TEMPLATE_DIRS'] = env(
@@ -85,7 +87,7 @@ class Form(forms.BaseForm):
         )
         settings['SITE_ID'] = env('SITE_ID', 1)
 
-        self.domain_settings(settings, env=env)
+        self.domain_settings(data, settings, env=env)
         self.server_settings(settings, env=env)
         self.logging_settings(settings, env=env)
         self.cache_settings(settings, env=env)
@@ -94,10 +96,39 @@ class Form(forms.BaseForm):
         self.migration_settings(settings, env=env)
         return settings
 
-    def domain_settings(self, settings, env):
+    def domain_settings(self, data, settings, env):
         settings['ALLOWED_HOSTS'] = env('ALLOWED_HOSTS', ['localhost', '*'])
-        settings['DOMAIN'] = env('DOMAIN')
-        # TODO: aldryn-sites config
+        # will take a full config dict from ALDRYN_SITES_DOMAINS if available,
+        # otherwise fall back to constructing the dict from DOMAIN,
+        # DOMAIN_ALIASES and DOMAIN_REDIRECTS
+        domains = env('ALDRYN_SITES_DOMAINS', {})
+        domain = env('DOMAIN')
+        if domain:
+            settings['DOMAIN'] = domain
+        domain_aliases = env('DOMAIN_ALIASES', '')
+        domain_redirects = env('DOMAIN_REDIRECTS', '')
+        if not domains and domain:
+            domains = {
+                1: {
+                    'domain': domain,
+                    'aliases': [d.strip() for d in domain_aliases.split(',') if d.strip()],
+                    'redirects': [d.strip() for d in domain_redirects.split(',') if d.strip()]
+                }
+            }
+        settings['ALDRYN_SITES_DOMAINS'] = domains
+        if domains and settings['SITE_ID'] in domains:
+            settings['ALLOWED_HOSTS'].extend([
+                domain for domain in domains[settings['SITE_ID']]['aliases']
+            ] + [
+                domain for domain in domains[settings['SITE_ID']]['redirects']
+            ])
+
+
+        settings['INSTALLED_APPS'].append('aldryn_sites')
+        settings['MIDDLEWARE_CLASSES'].insert(
+            settings['MIDDLEWARE_CLASSES'].index('django.middleware.common.CommonMiddleware'),
+            'aldryn_sites.middleware.SiteMiddleware',
+        )
 
     def server_settings(self, settings, env):
         settings['PORT'] = env('PORT', 80)

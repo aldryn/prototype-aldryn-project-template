@@ -45,6 +45,9 @@ setup(
         'certifi',
         'pyOpenSSL',
 
+        # other setup helpers
+        'aldryn-sites',
+
         # not strictly needed by Django, but aldryn-cms needs it and it must
         # be <1.9 for Django 1.6.x support
         'django-reversion<1.9',

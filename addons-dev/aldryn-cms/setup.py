@@ -11,7 +11,6 @@ setup(
         # common
         # TODO: mostly to be split out into other packages
         'django-compressor',
-        'django-health-check',
         'YURL',
         'South',
         'requests',
@@ -23,7 +22,6 @@ setup(
         'django-parler',
         'django-robots',
         'aldryn-boilerplates',
-        'aldryn-sites',
         'django-filer',
         'django-hvad',
         'aldryn-snake',

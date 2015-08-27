@@ -12,7 +12,6 @@ class Form(forms.BaseForm):
         env = partial(djsenv, settings=settings)
         # TODO: break out a lot of this stuff into other Addons
         settings['INSTALLED_APPS'].extend([
-            'aldryn_sites',
             'cms',
             'treebeard',
             'menus',
