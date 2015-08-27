@@ -20,6 +20,7 @@ class Form(forms.BaseForm):
             'reversion',
             'hvad',
             'parler',
+
         ])
         settings['INSTALLED_APPS'].insert(
             settings['INSTALLED_APPS'].index('django.contrib.admin'),
@@ -88,6 +89,10 @@ class Form(forms.BaseForm):
             settings['STATICFILES_FINDERS'].index('django.contrib.staticfiles.finders.AppDirectoriesFinder'),
             'aldryn_boilerplates.staticfile_finders.AppDirectoriesFinder',
         )
+
+        # django-compressor
+        settings['INSTALLED_APPS'].append('compressor')
+        settings['STATICFILES_FINDERS'].append('compressor.finders.CompressorFinder')
 
         # django-filer
         settings['INSTALLED_APPS'].extend([
