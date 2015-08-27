@@ -34,6 +34,11 @@ setup(
         'subprocess32',
         'South',
 
+        # storage
+        'django-storages',
+        'boto',
+        'djeese-fs',
+
         # securty related (insecure platform warnings)
         'cryptography',
         'ndg-httpsclient',

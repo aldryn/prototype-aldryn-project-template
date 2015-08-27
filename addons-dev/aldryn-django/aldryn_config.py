@@ -89,6 +89,7 @@ class Form(forms.BaseForm):
         self.server_settings(settings, env=env)
         self.logging_settings(settings, env=env)
         self.cache_settings(settings, env=env)
+        self.storage_settings(settings, env=env)
         self.i18n_settings(data, settings, env=env)
         self.migration_settings(settings, env=env)
         return settings
@@ -162,6 +163,14 @@ class Form(forms.BaseForm):
         cache_url = env('CACHE_URL')
         if cache_url:
             settings['CACHES']['default'] = django_cache_url.parse(cache_url)
+
+    def storage_settings(self, settings, env):
+        from aldryn_django.storage import parse_storage_url
+        if env('DEFAULT_STORAGE_DSN'):
+            settings['DEFAULT_STORAGE_DSN'] = env('DEFAULT_STORAGE_DSN')
+
+        if 'DEFAULT_STORAGE_DSN' in settings:
+            settings.update(parse_storage_url(settings['DEFAULT_STORAGE_DSN']))
 
     def i18n_settings(self, data, settings, env):
         settings['ALL_LANGUAGES'] = list(settings['LANGUAGES'])
