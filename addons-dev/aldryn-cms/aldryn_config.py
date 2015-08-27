@@ -73,10 +73,13 @@ class Form(forms.BaseForm):
                 parler_defaults.update({k: v})
         settings['PARLER_LANGUAGES'].update({'default': parler_defaults})
 
-        # aldryn-boilerplates
+        # aldryn-boilerplates and aldryn-snake
         settings['ALDRYN_BOILERPLATE_NAME'] = settings.get('ALDRYN_BOILERPLATE_NAME', 'legacy')
         settings['INSTALLED_APPS'].append('aldryn_boilerplates')
-        settings['TEMPLATE_CONTEXT_PROCESSORS'].append('aldryn_boilerplates.context_processors.boilerplate')
+        settings['TEMPLATE_CONTEXT_PROCESSORS'].extend([
+            'aldryn_boilerplates.context_processors.boilerplate',
+            'aldryn_snake.template_api.template_processor',
+        ])
         settings['TEMPLATE_LOADERS'].insert(
             settings['TEMPLATE_LOADERS'].index('django.template.loaders.app_directories.Loader'),
             'aldryn_boilerplates.template_loaders.AppDirectoriesLoader'

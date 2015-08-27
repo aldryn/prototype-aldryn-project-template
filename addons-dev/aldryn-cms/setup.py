@@ -27,5 +27,6 @@ setup(
         'django-filer',
         'cmsplugin-filer',
         'django-hvad',
+        'aldryn-snake',
     ),
 )
