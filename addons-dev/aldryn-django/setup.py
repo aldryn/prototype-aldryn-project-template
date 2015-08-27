@@ -7,6 +7,7 @@ setup(
     install_requires=(
         'aldryn-addons',
         'Django==1.6.11',
+
         # setup utils
         'dj-database-url',
         'dj-email-url',
@@ -17,11 +18,15 @@ setup(
         'django-getenv',
         'aldryn-client',
         'webservices',
+
+        # error reporting
         'raven',
         'opbeat',
+
         # wsgi server related
         'uwsgi',
         'dj-static',
+
         # database
         'psycopg2',
         'structlog',
@@ -29,8 +34,14 @@ setup(
         'subprocess32',
         'South',
 
-        # not strictly needed by Django, but django-cms needs it.
-        # it it must be <1.9 for Django 1.6.x support
+        # securty related (insecure platform warnings)
+        'cryptography',
+        'ndg-httpsclient',
+        'certifi',
+        'pyOpenSSL',
+
+        # not strictly needed by Django, but aldryn-cms needs it and it must
+        # be <1.9 for Django 1.6.x support
         'django-reversion<1.9',
     ),
     entry_points='''
