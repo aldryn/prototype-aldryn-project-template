@@ -1,3 +1,11 @@
--e addons-dev/aldryn-addons/
--e addons-dev/aldryn-django/
--e addons-dev/aldryn-cms/
+#-e addons-dev/aldryn-addons/
+#-e addons-dev/aldryn-django/
+#-e addons-dev/aldryn-cms
+# <INSTALLED_ADDONS>  # Warning: this is auto-generated. Manual changes will be overwritten.
+aldryn-addons
+aldryn-django==0.1
+aldryn-cms
+aldryn-newsblog
+# </INSTALLED_ADDONS>
+ipython
+ipdb
