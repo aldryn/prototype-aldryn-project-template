@@ -1,4 +1,7 @@
-# <DOCKER_FROM>  # Warning: this is auto-generated. Manual changes will be overwritten.
-FROM prototypebaseprojectmeta_baseprojectonbuild
+# <DOCKER_FROM>  # Warning: text inside the DOCKER_FROM tags is auto-generated. Manual changes will be overwritten.
+FROM aldryn/base-project:latest-onbuild
 # </DOCKER_FROM>
-#FROM aldryn/base-project:latest-onbuild
+
+# <DOCKER_BUILD>  # Warning: text inside the DOCKER_BUILD tags is auto-generated. Manual changes will be overwritten.
+# </DOCKER_BUILD>
+
